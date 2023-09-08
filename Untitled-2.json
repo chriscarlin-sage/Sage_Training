@@ -1,0 +1,143 @@
+// DAX Query
+DEFINE
+  VAR __DS0FilterTable = 
+    FILTER(
+      KEEPFILTERS(VALUES('Bookings_SovInvoices + Operational'[SovId_SoldBy])),
+      NOT(
+         'Bookings_SovInvoices + Operational'[SovId_SoldBy] IN {
+          "3725",
+          "2652",
+          "4918",
+          "6530",
+          "7412",
+          "4776",
+          "5052",
+          "8570",
+          "Internal Change",
+          "357"}
+      )
+    )
+
+    VAR __DS0FilterTable3 = 
+    TREATAS(
+      {"Recurring",
+        "Non-Recurring"},
+      'Bookings_SovInvoices + Operational'[RecurringOrNonRecurring]
+    )
+
+  VAR __DS0FilterTable4 = 
+    TREATAS({"Intacct",
+      "S50 Franchise",
+      "Sage 200",
+      "X3"}, 'TARDIS MAP'[Product Level 1])
+
+  VAR __DS0FilterTable5 = 
+    TREATAS({"£ - British Pound"}, 'Report Currency'[Currency])
+
+  VAR __DS0FilterTable6 = 
+    FILTER(
+      KEEPFILTERS(VALUES('Bookings_SovInvoices + Operational'[TransactionTypeGroup])),
+      NOT('Bookings_SovInvoices + Operational'[TransactionTypeGroup] IN {"Renewal"})
+    )
+
+  VAR __DS0FilterTable7 = 
+    FILTER(
+      KEEPFILTERS(
+        SUMMARIZE(VALUES('Calendar'), 'Calendar'[Financial Year], 'Calendar'[Calendar Month Year])
+      ),
+      AND(
+        'Calendar'[Financial Year] IN {"FY 23"},
+        ('Calendar'[Financial Year], 'Calendar'[Calendar Month Year]) IN {("FY 23", "January 2023")}
+      )
+    )
+
+  VAR __DS0FilterTable8 = 
+    FILTER(
+      KEEPFILTERS(VALUES('Bookings_SovInvoices + Operational'[TransactionType])),
+      NOT(
+        'Bookings_SovInvoices + Operational'[TransactionType] IN {"L500 Credit - Renewal",
+          "L500 Credit - Renewal - Clawback",
+          "Renewal",
+          "L500 Credit - Clawback"}
+      )
+    )
+
+  VAR __DS0Core = 
+    SUMMARIZECOLUMNS(
+      ROLLUPADDISSUBTOTAL(
+        ROLLUPGROUP(
+          'Bookings_SovInvoices + Operational'[TransactionId],
+          'Bookings_SovInvoices + Operational'[Credit > 12 Mths],
+          'Bookings_SovInvoices + Operational'[RecurringOrNonRecurring],
+          'Bookings_SovInvoices + Operational'[TransactionType],
+          'Bookings_SovInvoices + Operational'[StockCode],
+          'Bookings_SovInvoices + Operational'[DataSource],
+          'Bookings_SovInvoices + Operational'[Date_ContractEffective],
+          'Bookings_SovInvoices + Operational'[TransactionTypeGroup],
+          'Bookings_SovInvoices + Operational'[SovId_SoldBy],
+          'Bookings_SovInvoices + Operational'[OpportunityId],
+          'Bookings_SovInvoices + Operational'[Opp URL],
+          'Reseller Account Numbers'[CompanyName],
+          'TARDIS MAP'[Product.Product Description],
+          'TARDIS MAP'[Product Level 1],
+          'Intouch Account Numbers'[EndUserInTouchAccountNumber],
+          'Intouch Account Numbers'[Linked Company Name],
+          'Calendar'[Date],
+          'Bookings_SovInvoices + Operational'[Opp Channel],
+          'Bookings_SovInvoices + Operational'[Opp Name],
+          'TARDIS MAP'[Product Group],
+          'Partner Matrix'[PAM],
+          'Bookings_SovInvoices + Operational'[Partner Acc Number],
+          'Bookings_SovInvoices + Operational'[CurrencyIsoCode]
+        ), "IsGrandTotalRowTotal"
+      ),
+      __DS0FilterTable,
+      __DS0FilterTable3,
+      __DS0FilterTable4,
+      __DS0FilterTable5,
+      __DS0FilterTable6,
+      __DS0FilterTable8,
+      "MinSubscriptionVersion", CALCULATE(MIN('Bookings_SovInvoices + Operational'[SubscriptionVersion])),
+      "MinMainProductFlag", CALCULATE(MIN('Bookings_SovInvoices + Operational'[MainProductFlag])),
+      "MinSerialNumber", CALCULATE(MIN('Bookings_SovInvoices + Operational'[SerialNumber])),
+      "Bookings_Actual", 'Model Metrics'[Bookings Actual],
+      "Booking_Adj_Currency", 'Model Metrics'[Booking Adj Currency],
+      "Value_Booked_Adjusted", 'Model Metrics'[Value Booked Adjusted],
+      "SumValue_Booked_Adjusted", CALCULATE(SUM('Bookings_SovInvoices + Operational'[Value_Booked_Adjusted])),
+      "CountOpp_URL", IGNORE(CALCULATE(COUNTA('Bookings_SovInvoices + Operational'[Opp URL]))),
+      "CountPAM", IGNORE(CALCULATE(COUNTA('Partner Matrix'[PAM])))
+    )
+
+
+  
+EVALUATE
+  __DS0Core
+
+ORDER BY
+  [IsGrandTotalRowTotal] DESC,
+  'Calendar'[Date] DESC,
+  'Bookings_SovInvoices + Operational'[TransactionId],
+  'Bookings_SovInvoices + Operational'[RecurringOrNonRecurring],
+  'Bookings_SovInvoices + Operational'[TransactionType],
+  'Bookings_SovInvoices + Operational'[StockCode],
+  'Bookings_SovInvoices + Operational'[DataSource],
+  'Bookings_SovInvoices + Operational'[Date_ContractEffective],
+  'Bookings_SovInvoices + Operational'[TransactionTypeGroup],
+  'Bookings_SovInvoices + Operational'[SovId_SoldBy],
+  'Bookings_SovInvoices + Operational'[OpportunityId],
+  'Bookings_SovInvoices + Operational'[Opp URL],
+  'Reseller Account Numbers'[CompanyName],
+  'TARDIS MAP'[Product.Product Description],
+  'TARDIS MAP'[Product Level 1],
+  'Intouch Account Numbers'[EndUserInTouchAccountNumber],
+  'Intouch Account Numbers'[Linked Company Name],
+  'Bookings_SovInvoices + Operational'[Opp Channel],
+  'Bookings_SovInvoices + Operational'[Opp Name],
+  'TARDIS MAP'[Product Group],
+  'Partner Matrix'[PAM],
+  'Bookings_SovInvoices + Operational'[Partner Acc Number],
+  'Bookings_SovInvoices + Operational'[CurrencyIsoCode]
+
+
+
+  
