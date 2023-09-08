@@ -29,6 +29,7 @@ DEFINE
     TREATAS({"Intacct",
       "S50 Franchise",
       "Sage 200",
+      "HR",
       "X3"}, 'TARDIS MAP'[Product Level 1])
 
   VAR __DS0FilterTable5 = 
@@ -46,14 +47,13 @@ DEFINE
         SUMMARIZE(VALUES('Calendar'), 'Calendar'[Financial Year], 'Calendar'[Calendar Month Year])
       ),
       AND(
-        'Calendar'[Financial Year] IN {"FY 23"},
         ('Calendar'[Financial Year], 'Calendar'[Calendar Month Year]) IN {("FY 23", "January 2023")}
       )
     )
 
   VAR __DS0FilterTable8 = 
     FILTER(
-      KEEPFILTERS(VALUES('Bookings_SovInvoices + Operational'[TransactionType])),
+      KEEPFILTERS(VALUES('Bookings_SovMarketing + Operational'[TransactionType])),
       NOT(
         'Bookings_SovInvoices + Operational'[TransactionType] IN {"L500 Credit - Renewal",
           "L500 Credit - Renewal - Clawback",
@@ -134,9 +134,9 @@ ORDER BY
   'Bookings_SovInvoices + Operational'[Opp Channel],
   'Bookings_SovInvoices + Operational'[Opp Name],
   'TARDIS MAP'[Product Group],
-  'Partner Matrix'[PAM],
   'Bookings_SovInvoices + Operational'[Partner Acc Number],
-  'Bookings_SovInvoices + Operational'[CurrencyIsoCode]
+  'Bookings_SovInvoices + Operational'[CurrencyIsoCode],
+  'Bookings_SovInvoices + Operational'[Currency]
 
 
 
